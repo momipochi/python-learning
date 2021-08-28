@@ -5,6 +5,7 @@ from selenium.webdriver.common.keys import Keys
 import time
 from PIL import Image
 import os
+import sys
 """
     sample urls
     https://www.xinmeitulu.com/mote/ninjaazhaizhai
@@ -16,10 +17,11 @@ import os
 
 """
 
-main_url = "https://tw.xinmeitulu.com/mote/coseryanjiangdamowangw";
+main_url = sys.argv[1];
+print(main_url);
 # enter the url you want, make sure the ending does not have page number
 
-directory = "D:/trying"; # modify this to change directory
+directory = sys.argv[2]; # modify this to change directory
 
 
 def count_pages(page_set):
@@ -112,12 +114,3 @@ for page in range(page_count):
 
 multi_page_scrape(page_count);
 
-
-
-#page specific
-"""
-
-
-
-driver.close();
-"""
