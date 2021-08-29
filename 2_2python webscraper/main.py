@@ -16,6 +16,7 @@ import concurrent.futures
     https://tw.xinmeitulu.com/mote/coseryanjiangdamowangw
 
 """
+page_driver_timer = 3; #thread sleep for making sure pages load
 
 scraper_ethics = True;
 if not len(sys.argv) > 3:
@@ -63,7 +64,7 @@ def get_page_driver(url):
     driver = webdriver.Chrome("./chromedriver",options=chrome_options);
     driver.get(url);
     
-    time.sleep(3);
+    time.sleep(page_driver_timer);
     return driver;
 
 def multi_page_scrape(page_count):
