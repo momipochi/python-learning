@@ -19,7 +19,7 @@ import concurrent.futures
 page_driver_timer = 3; #thread sleep for making sure pages load
 
 scraper_ethics = True;
-if not len(sys.argv) > 3:
+if not len(sys.argv) >= 3:
     scraper_ethics = sys.argv[3];
 
 main_url = sys.argv[1];
