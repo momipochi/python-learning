@@ -17,6 +17,10 @@ import concurrent.futures
 
 """
 
+scraper_ethics = True;
+if not len(sys.argv) > 3:
+    scraper_ethics = sys.argv[3];
+
 main_url = sys.argv[1];
 print(main_url);
 # enter the url you want, make sure the ending does not have page number
@@ -51,7 +55,8 @@ def single_page_scrape(driver):
     for href_link in all_url:
         album_drivers.append(get_page_driver(href_link));
     threaded_page_scrape(album_drivers);
-    time.sleep(3);
+    if scraper_ethics:
+        time.sleep(3);
 
 def get_page_driver(url):
     tabbed_log("Getting page driver");
@@ -102,11 +107,13 @@ def scrape_page_and_save(driver):
         i+=1;
     driver.close();
     tabbed_log("Downloading images..");
-    time.sleep(3);
+    if scraper_ethics:
+        time.sleep(3);
     threadDownload(img_urls,img_dirs);
 
 def downloadImage(img_url,img_dir):
-    time.sleep(1);
+    if scraper_ethics:
+        time.sleep(1);
     img_bytes = requests.get(img_url).content;
     with open(img_dir, 'wb') as img_file:
         img_file.write(img_bytes);
@@ -117,10 +124,7 @@ def threadDownload(img_urls, img_dirs):
 
 ## main starting point
 
-driver = webdriver.Chrome("./chromedriver",options=chrome_options);
-driver.get(main_url);
-
-time.sleep(5);
+driver = get_page_driver(main_url);
 
 html = driver.page_source;
 
