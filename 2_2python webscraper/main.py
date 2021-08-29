@@ -37,11 +37,15 @@ def count_pages(page_set):
     if not page_set == None:
         pages = page_set.find_all("li");
         
-        page_count = int(pages[len(pages)-2].text);
+        count_string = pages[len(pages)-2].text;
+        
+        page_count = int(count_string.replace(",",""));
             
     return page_count;
 def tabbed_log(str):
     print(f"\t{str}");
+
+album_drivers = [];
 def single_page_scrape(driver):
     html = driver.page_source;
     soup = BeautifulSoup(html,"html.parser");
@@ -51,13 +55,28 @@ def single_page_scrape(driver):
         all_url.append(figure_url.a["href"]);
         # print(href_link);
     driver.close();
-    album_drivers = [];
 
-    for href_link in all_url:
-        album_drivers.append(get_page_driver(href_link));
+    threaded_album_drivers(all_url);
+    while not len(album_drivers) == len(all_url):
+        print(len(album_drivers));
+        print(len(all_url));
+        print("Waiting for all drivers to be prepared");
+        time.sleep(3);
+
     threaded_page_scrape(album_drivers);
     if scraper_ethics:
         time.sleep(3);
+
+def threaded_album_drivers(album_urls):
+    with concurrent.futures.ThreadPoolExecutor() as executor:
+        executor.map(append_album_driver,album_urls);
+
+def append_album_driver(url):
+    tabbed_log("Getting page driver");
+    driver = webdriver.Chrome("./chromedriver",options=chrome_options);
+    driver.get(url);
+    time.sleep(page_driver_timer);
+    album_drivers.append(driver);
 
 def get_page_driver(url):
     tabbed_log("Getting page driver");
@@ -70,7 +89,7 @@ def get_page_driver(url):
 def multi_page_scrape(page_count):
     for page_number in range(page_count):
         print(f"Page {page_number+1}");
-        
+        album_drivers.clear();
         page_driver = get_page_driver(f"{main_url}/page/{page_number+1}");
 
         single_page_scrape(page_driver);
