@@ -62,6 +62,10 @@ def multi_page_scrape(page_count):
 
         single_page_scrape(page_driver);
 
+def threaded_page_scrape(page_urls):
+    with concurrent.futures.ThreadPoolExecutor() as executor:
+        executor.map(single_page_scrape, page_urls);
+
 def scrape_page_and_save(driver):
     html = driver.page_source;
     soup = BeautifulSoup(html,"html.parser");
