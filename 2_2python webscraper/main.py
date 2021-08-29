@@ -63,7 +63,7 @@ def get_page_driver(url):
     driver = webdriver.Chrome("./chromedriver",options=chrome_options);
     driver.get(url);
     
-    time.sleep(5);
+    time.sleep(3);
     return driver;
 
 def multi_page_scrape(page_count):
