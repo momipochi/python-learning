@@ -58,6 +58,7 @@ def get_page_driver(url):
     driver = webdriver.Chrome("./chromedriver",options=chrome_options);
     driver.get(url);
     
+    time.sleep(5);
     return driver;
 
 def multi_page_scrape(page_count):
@@ -89,6 +90,8 @@ def scrape_page_and_save(driver):
 
     if not os.path.exists(save_directory):
         os.makedirs(save_directory);
+    else:
+        return;
     i = 1;
 
     img_urls = [];
