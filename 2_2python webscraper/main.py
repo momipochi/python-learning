@@ -2,10 +2,12 @@ from bs4 import BeautifulSoup
 import requests
 from selenium import webdriver
 from selenium.webdriver.common.keys import Keys
+from selenium.webdriver.chrome.options import Options
 import time
 from PIL import Image
 import os
 import sys
+import concurrent.futures
 """
     sample urls
     https://www.xinmeitulu.com/mote/ninjaazhaizhai
@@ -23,6 +25,9 @@ print(main_url);
 
 directory = sys.argv[2]; # modify this to change directory
 
+chrome_options = Options();
+chrome_options.add_argument("--headless");
+chrome_options.add_argument("log-level=3");
 
 def count_pages(page_set):
     page_count = 1;
@@ -46,7 +51,7 @@ def single_page_scrape(driver):
         scrape_page_and_save(get_page_driver(href_link));
 
 def get_page_driver(url):
-    driver = webdriver.Chrome("./chromedriver");
+    driver = webdriver.Chrome("./chromedriver",options=chrome_options);
     driver.get(url);
     time.sleep(5);
     
@@ -69,24 +74,35 @@ def scrape_page_and_save(driver):
 
     folder_name = title_content.text.strip();
 
-    save_directory = f"{directory}/{folder_name}";
+    save_directory = f"{directory}\{folder_name}";
 
     print(save_directory);
 
     if not os.path.exists(save_directory):
         os.makedirs(save_directory);
     i = 1;
-    for divs in all_divs:
-        imgurl = divs["src"];
-        img = Image.open(requests.get(imgurl,stream=True).raw);
-        img.save(f"{save_directory}/{folder_name} - {i}.jpg","JPEG");
-        i+=1;
 
+    img_urls = [];
+    img_dirs = []
+    for divs in all_divs:
+        img_urls.append(divs["src"]);
+        img_dirs.append(f"{save_directory}\{folder_name} - {i}.jpg");
+        i+=1;
     driver.close();
+    threadDownload(img_urls,img_dirs);
+
+def downloadImage(img_url,img_dir):
+    img_bytes = requests.get(img_url).content;
+    with open(img_dir, 'wb') as img_file:
+        img_file.write(img_bytes);
+
+def threadDownload(img_urls, img_dirs):
+    with concurrent.futures.ThreadPoolExecutor() as executor:
+        executor.map(downloadImage, img_urls,img_dirs);
 
 ## main starting point
 
-driver = webdriver.Chrome("./chromedriver");
+driver = webdriver.Chrome("./chromedriver",options=chrome_options);
 driver.get(main_url);
 
 time.sleep(5);
@@ -102,7 +118,7 @@ driver.close();
 
 folder_title = title_array[0].strip();
 
-directory = f"{directory}/{folder_title}";
+directory = f"{directory}{folder_title}";
 if not os.path.exists(directory):
     os.makedirs(directory);
 
