@@ -35,7 +35,8 @@ def count_pages(page_set):
         page_count = int(pages[len(pages)-2].text);
             
     return page_count;
-
+def tabbed_log(str):
+    print(f"\t{str}");
 def single_page_scrape(driver):
     html = driver.page_source;
     soup = BeautifulSoup(html,"html.parser");
@@ -45,26 +46,31 @@ def single_page_scrape(driver):
         all_url.append(figure_url.a["href"]);
         # print(href_link);
     driver.close();
+    album_drivers = [];
+
     for href_link in all_url:
-        scrape_page_and_save(get_page_driver(href_link));
+        album_drivers.append(get_page_driver(href_link));
+    threaded_page_scrape(album_drivers);
+    time.sleep(3);
 
 def get_page_driver(url):
+    tabbed_log("Getting page driver");
     driver = webdriver.Chrome("./chromedriver",options=chrome_options);
     driver.get(url);
-    time.sleep(5);
     
     return driver;
 
 def multi_page_scrape(page_count):
     for page_number in range(page_count):
+        print(f"Page {page_number+1}");
         
         page_driver = get_page_driver(f"{main_url}/page/{page_number+1}");
 
         single_page_scrape(page_driver);
 
-def threaded_page_scrape(page_urls):
+def threaded_page_scrape(album_drivers):
     with concurrent.futures.ThreadPoolExecutor() as executor:
-        executor.map(single_page_scrape, page_urls);
+        executor.map(scrape_page_and_save, album_drivers);
 
 def scrape_page_and_save(driver):
     html = driver.page_source;
@@ -76,9 +82,10 @@ def scrape_page_and_save(driver):
 
     folder_name = title_content.text.strip();
 
+
     save_directory = f"{directory}\{folder_name}";
 
-    print(save_directory);
+    tabbed_log(f"Save directory- {save_directory}");
 
     if not os.path.exists(save_directory):
         os.makedirs(save_directory);
@@ -91,9 +98,12 @@ def scrape_page_and_save(driver):
         img_dirs.append(f"{save_directory}\{folder_name} - {i}.jpg");
         i+=1;
     driver.close();
+    tabbed_log("Downloading images..");
+    time.sleep(3);
     threadDownload(img_urls,img_dirs);
 
 def downloadImage(img_url,img_dir):
+    time.sleep(3);
     img_bytes = requests.get(img_url).content;
     with open(img_dir, 'wb') as img_file:
         img_file.write(img_bytes);
@@ -127,8 +137,6 @@ if not os.path.exists(directory):
 page_count = count_pages(all_pages);
 print(f"Number of pages: {page_count}");
 
-for page in range(page_count):
-    print(page+1);
 
 multi_page_scrape(page_count);
 
