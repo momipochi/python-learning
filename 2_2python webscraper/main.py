@@ -103,7 +103,7 @@ def scrape_page_and_save(driver):
     threadDownload(img_urls,img_dirs);
 
 def downloadImage(img_url,img_dir):
-    time.sleep(3);
+    time.sleep(1);
     img_bytes = requests.get(img_url).content;
     with open(img_dir, 'wb') as img_file:
         img_file.write(img_bytes);
