@@ -33,6 +33,7 @@ def photo_scrape(url):
     print(dir)
     if not os.path.exists(dir):
         os.makedirs(dir);
+
     image_urls = []
     img_dirs = []
     i = 1
@@ -47,10 +48,20 @@ def album_scrape(url):
     r = get_request(url)
     soup = BeautifulSoup(r.text,"html.parser")
     image_entries = soup.find_all("figure", {"class":"figure"})
+    title_entries = soup.find_all("article",{"class":"container"})
     close_request(r)
     image_urls = []
+    i = 0
     for image in image_entries:
+        title = title_entries[i].div.h1.text.strip()
+        dir = f"{directory}{title}"
+        i+=1
+        if os.path.exists(dir):
+            continue
         image_urls.append(image.a["href"])
+    if len(image_urls) == 0:
+        print(" No urls to scrape")
+        return
     print("\tScraping each album")
     photo_scrape_thread(image_urls)
 
