@@ -1,36 +1,13 @@
+import json
 from bs4 import BeautifulSoup
 import requests
-from selenium import webdriver
-from selenium.webdriver.chrome.options import Options
-import time
-import os
-import sys
+import os.path
 import concurrent.futures
-"""
-    sample urls
-    https://www.xinmeitulu.com/mote/ninjaazhaizhai
-    https://www.xinmeitulu.com/mote/baiyin81
-    https://www.xinmeitulu.com/mote/coserxiaocangqiandaiw
-    https://www.xinmeitulu.com/mote/chunmomo
-    https://tw.xinmeitulu.com/mote/cosermizhimaoqiu
-    https://tw.xinmeitulu.com/mote/coseryanjiangdamowangw
+import time
+import sys
 
-"""
-page_driver_timer = 3; #thread sleep for making sure pages load
-
-scraper_ethics = True;
-if not len(sys.argv) >= 3:
-    scraper_ethics = sys.argv[3];
-
-main_url = sys.argv[1];
-print(main_url);
-# enter the url you want, make sure the ending does not have page number
-
-directory = sys.argv[2]; # modify this to change directory
-
-chrome_options = Options();
-chrome_options.add_argument("--headless");
-chrome_options.add_argument("log-level=3");
+main_url = sys.argv[1]
+directory = sys.argv[2]
 
 def count_pages(page_set):
     page_count = 1;
@@ -39,131 +16,86 @@ def count_pages(page_set):
         
         count_string = pages[len(pages)-2].text;
         
-        page_count = int(count_string.replace(",",""));
-            
-    return page_count;
-def tabbed_log(str):
-    print(f"\t{str}");
-
-album_drivers = [];
-def single_page_scrape(driver):
-    html = driver.page_source;
-    soup = BeautifulSoup(html,"html.parser");
-    all_figures = soup.find_all("figure", class_ = "figure");
-    all_url = [];
-    for figure_url in all_figures:
-        all_url.append(figure_url.a["href"]);
-        # print(href_link);
-    driver.close();
-
-    threaded_album_drivers(all_url);
-    while not len(album_drivers) == len(all_url):
-        print(len(album_drivers));
-        print(len(all_url));
-        print("Waiting for all drivers to be prepared");
-        time.sleep(3);
-
-    threaded_page_scrape(album_drivers);
-    if scraper_ethics:
-        time.sleep(3);
-
-def threaded_album_drivers(album_urls):
-    with concurrent.futures.ThreadPoolExecutor() as executor:
-        executor.map(append_album_driver,album_urls);
-
-def append_album_driver(url):
-    tabbed_log("Getting page driver");
-    driver = webdriver.Chrome("./chromedriver",options=chrome_options);
-    driver.get(url);
-    time.sleep(page_driver_timer);
-    album_drivers.append(driver);
-
-def get_page_driver(url):
-    tabbed_log("Getting page driver");
-    driver = webdriver.Chrome("./chromedriver",options=chrome_options);
-    driver.get(url);
-    
-    time.sleep(page_driver_timer);
-    return driver;
-
-def multi_page_scrape(page_count):
-    for page_number in range(page_count):
-        print(f"Page {page_number+1}");
-        album_drivers.clear();
-        page_driver = get_page_driver(f"{main_url}/page/{page_number+1}");
-
-        single_page_scrape(page_driver);
-
-def threaded_page_scrape(album_drivers):
-    with concurrent.futures.ThreadPoolExecutor() as executor:
-        executor.map(scrape_page_and_save, album_drivers);
-
-def scrape_page_and_save(driver):
-    html = driver.page_source;
-    soup = BeautifulSoup(html,"html.parser");
-
-    all_divs = soup.find_all("img", class_ = "figure-img img-fluid rounded");
-
-    title_content = soup.find("h1", class_ = "h3");
-
-    folder_name = title_content.text.strip();
-
-
-    save_directory = f"{directory}\{folder_name}";
-
-    tabbed_log(f"Save directory- {save_directory}");
-
-    if not os.path.exists(save_directory):
-        os.makedirs(save_directory);
-    i = 1;
-
-    img_urls = [];
+        page_count = int(count_string.replace(",",""))
+    return page_count
+def get_request(url):
+    return requests.get(url)
+def close_request(request):
+    request.close()
+def photo_scrape(url):
+    r = get_request(url)
+    soup = BeautifulSoup(r.text,"html.parser")
+    image_entries = soup.find_all("figure", {"class":"figure"})
+    title_entires = soup.find("h1", {"class":"h3"})
+    title = title_entires.text.strip()
+    close_request(r)
+    dir = f"{directory}{title}"
+    print(dir)
+    if not os.path.exists(dir):
+        os.makedirs(dir);
+    image_urls = []
     img_dirs = []
-    for divs in all_divs:
-        img_urls.append(divs["src"]);
-        img_dirs.append(f"{save_directory}\{folder_name} - {i}.jpg");
-        i+=1;
-    driver.close();
-    tabbed_log("Downloading images..");
-    if scraper_ethics:
-        time.sleep(3);
-    threadDownload(img_urls,img_dirs);
+    i = 1
+    for image in image_entries:
+        img_dirs.append(f"{dir}\\{title} - {i}.jpg")
+        image_urls.append(image.img["src"])
+        i+=1
+    print(f"\tDownloading - {title}")
+    download_image_thread(image_urls,img_dirs)
+def album_scrape(url):
+    time.sleep(2)
+    r = get_request(url)
+    soup = BeautifulSoup(r.text,"html.parser")
+    image_entries = soup.find_all("figure", {"class":"figure"})
+    close_request(r)
+    image_urls = []
+    for image in image_entries:
+        image_urls.append(image.a["href"])
+    print("\tScraping each album")
+    photo_scrape_thread(image_urls)
 
-def downloadImage(img_url,img_dir):
-    if os.path.isfile(img_dir):
-        return
-    if scraper_ethics:
-        time.sleep(1);
-    img_bytes = requests.get(img_url).content;
-    with open(img_dir, 'wb') as img_file:
-        img_file.write(img_bytes);
-
-def threadDownload(img_urls, img_dirs):
+def photo_scrape_thread(urls):
     with concurrent.futures.ThreadPoolExecutor() as executor:
-        executor.map(downloadImage, img_urls,img_dirs);
+        executor.map(photo_scrape,urls)
+def download_image(url,dir):
+    if os.path.isfile(dir):
+        return
+    time.sleep(2)
+    img_bytes = requests.get(url).content
+    with open(dir,'wb') as img_file:
+        img_file.write(img_bytes)
+def download_image_thread(urls, dirs):
+    with concurrent.futures.ThreadPoolExecutor() as executor:
+        executor.map(download_image,urls,dirs)
 
-## main starting point
 
-driver = get_page_driver(main_url);
 
-html = driver.page_source;
 
-soup = BeautifulSoup(html,"html.parser");
-all_pages = soup.find("ul", class_ = "pagination");
+r = get_request(main_url);
+soup = BeautifulSoup(r.text,"html.parser")
+
+album_entries = soup.find_all("figure", {"class":"figure"})
+
+pagination = soup.find("ul", class_ = "pagination");
 
 title_array = soup.find("title").text.strip().split("|");
-
-driver.close();
-
 folder_title = title_array[0].strip();
+close_request(r)
 
-directory = f"{directory}{folder_title}";
+directory = f"{directory}{folder_title}\\";
 if not os.path.exists(directory):
     os.makedirs(directory);
 
-page_count = count_pages(all_pages);
-print(f"Number of pages: {page_count}");
+page_count = count_pages(pagination)
 
+for page in range(page_count):
+    actual_page = page+1
+    print(f" Scraping page- {actual_page}")
+    print(f"{main_url}/page/{actual_page}")
+    album_scrape(f"{main_url}/page/{actual_page}")
+print(" Scrape complete")
+# r = get_request("https://www.xinmeitulu.com/photo/cos%e7%a6%8f%e5%88%a9-%e7%99%bd%e9%93%b6-%e6%8a%96s%e5%a7%90%e5%a7%90%ef%bc%88%e4%b8%8b%ef%bc%89");
+# soup = BeautifulSoup(r.text,"html.parser")
 
-multi_page_scrape(page_count);
-
+# album_entries = soup.find_all("figure", {"class":"figure"})
+# print(album_entries)
