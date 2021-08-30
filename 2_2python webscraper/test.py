@@ -1,11 +1,15 @@
 import json
+from bs4 import BeautifulSoup
 from lxml import html
 import requests
+import cloudscraper
 
-page = requests.get('https://www.nicovideo.jp/user/3565926')
-data = page.json();
-# tree = html.fromstring(page.content)
-# #This will create a list of buyers:
-# nico = tree.xpath('//div[@class="NicorepoItem-contentDetailLabel"]/text()')
+main_url = "https://public.api.nicovideo.jp/v2/wakutkool/frames.json?names=pc-mypage-formation&names=pc-mypage-overlay-banner&tags=userpage&responseType=pc";
 
-print(data);
+r = requests.get(main_url);
+print(r.text);
+
+# scraper = cloudscraper.create_scraper();
+# web_text = scraper.get(main_url).text;
+
+# print(web_text);

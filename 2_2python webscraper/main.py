@@ -115,8 +115,6 @@ def scrape_page_and_save(driver):
 
     if not os.path.exists(save_directory):
         os.makedirs(save_directory);
-    else:
-        return;
     i = 1;
 
     img_urls = [];
@@ -132,6 +130,8 @@ def scrape_page_and_save(driver):
     threadDownload(img_urls,img_dirs);
 
 def downloadImage(img_url,img_dir):
+    if os.path.isfile(img_dir):
+        return
     if scraper_ethics:
         time.sleep(1);
     img_bytes = requests.get(img_url).content;
