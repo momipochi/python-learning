@@ -12,7 +12,6 @@ class FunctionalCommand:
     update = ["-u","update"]
     all_folders = ["*","."]
     list_all = ["-l","list"]
-    sort_all = ["sort"]
 
 main_url=""
 directory=""

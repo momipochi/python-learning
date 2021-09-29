@@ -1,3 +1,11 @@
 
 # usage
-# python main.py <url> <directory>
+# python xinmei.py <url> <directory>
+# python xinmei.py <directory> <command>
+
+ Commands:
+	-u : checks only first page for update
+	-update : checks all pages for update
+
+	-l : lists each folder and link to page
+	-list : does the same as -l
