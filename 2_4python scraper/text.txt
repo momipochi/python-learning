@@ -1,0 +1,15 @@
+{
+"accept": "text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.9",
+"accept-encoding": "gzip, deflate, br",
+"accept-language": "en-GB,en-US;q=0.9,en;q=0.8,la;q=0.7",
+"cache-control": "max-age=0",
+"cookie": "frontend=9b2cb43027565ee949287b0f0a76b654; _gid=GA1.2.921067943.1630409513; frontend-rmu=YnhGZ4G14xRliV9onIN3rdFoo61D; frontend-rmt=cXMAudiAjwBa7gMbVVz7LlZ9D8f6tWGrOOJeEd1URkwVyUI9wrVscj15R8yR6lpy; _gat_UA-140713725-1=1; __cf_bm=88af22804a737196cee51ff562c8c5d485c0bcbe-1630420851-1800-Aa/oRzFL0bOmnnJqsj9Qu4LW8UGbd2FNEe77/+xkaTaQuaDbiUQV7fE3epKiAGzhel7Wd3leiPuNdBOrEKRPrfkX9p2v4rrzcEa3A+5DnUIKlMsYu81EZHFBZp0pf2NJAA==; _ga_170M3FX3HZ=GS1.1.1630418700.2.1.1630420854.53; _ga=GA1.2.1729187268.1630409513",
+"sec-ch-ua": ""Chromium";v="92", " Not A;Brand";v="99", "Google Chrome";v="92"",
+"sec-ch-ua-mobile": "?0",
+"sec-fetch-dest": "document",
+"sec-fetch-mode": "navigate",
+"sec-fetch-site": "none",
+"sec-fetch-user": "?1",
+"upgrade-insecure-requests": "1",
+"user-agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/92.0.4515.159 Safari/537.36"
+}
